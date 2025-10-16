@@ -1,12 +1,12 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io"
+
 	"log"
 	"net"
-	"strings"
+
+	"github.com/didattica-forever/httpfromtcp/internal/request"
 )
 
 const port = ":42069"
@@ -26,15 +26,17 @@ func main() {
 		}
 		fmt.Println("Accepted connection from", conn.RemoteAddr())
 
-		linesChan := getLinesChannel(conn)
+		request, err := request.RequestFromReader(conn) //getLinesChannel(conn)
 
-		for line := range linesChan {
-			fmt.Println(line)
+		if err != nil {
+			log.Fatalf("error: %s\n", err.Error())
 		}
+		fmt.Printf("Request line:\n- Method: %s\n- Target: %s\n- Version: %s\n", request.RequestLine.Method, request.RequestLine.RequestTarget, request.RequestLine.HttpVersion)
 		fmt.Println("Connection to ", conn.RemoteAddr(), "closed")
 	}
 }
 
+/*
 func getLinesChannel(f io.ReadCloser) <-chan string {
 	lines := make(chan string)
 	go func() {
@@ -65,3 +67,4 @@ func getLinesChannel(f io.ReadCloser) <-chan string {
 	}()
 	return lines
 }
+*/
